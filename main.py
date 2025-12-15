@@ -96,21 +96,31 @@ elif viz_option == '워드클라우드':
     import os
     font_path = None
     possible_paths = [
-        os.path.join(os.path.dirname(__file__), 'NanumGothic.ttf'),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'NanumGothic.ttf'),
         'NanumGothic.ttf',
+        './NanumGothic.ttf',
         'C:\\Windows\\Fonts\\malgun.ttf',
         '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
     ]
 
     for path in possible_paths:
-        if os.path.exists(path):
-            font_path = path
-            break
+        if os.path.exists(path) and os.path.isfile(path):
+            try:
+                from PIL import ImageFont
+                ImageFont.truetype(path, 12)
+                font_path = path
+                break
+            except:
+                continue
 
     text = ' '.join([word for nouns in all_nouns for word in nouns])
-    if font_path:
-        wc = WordCloud(font_path=font_path, max_words=max_words, width=800, height=800, background_color='white', colormap='viridis').generate(text)
-    else:
+
+    try:
+        if font_path:
+            wc = WordCloud(font_path=font_path, max_words=max_words, width=800, height=800, background_color='white', colormap='viridis').generate(text)
+        else:
+            wc = WordCloud(max_words=max_words, width=800, height=800, background_color='white', colormap='viridis').generate(text)
+    except:
         wc = WordCloud(max_words=max_words, width=800, height=800, background_color='white', colormap='viridis').generate(text)
 
     fig, ax = plt.subplots(figsize=(10, 10))
@@ -144,16 +154,21 @@ elif viz_option == '네트워크 분석':
         import matplotlib.font_manager as fm
         font_path = None
         possible_paths = [
-            os.path.join(os.path.dirname(__file__), 'NanumGothic.ttf'),
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), 'NanumGothic.ttf'),
             'NanumGothic.ttf',
+            './NanumGothic.ttf',
             'C:\\Windows\\Fonts\\malgun.ttf',
             '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
         ]
 
         for path in possible_paths:
-            if os.path.exists(path):
-                font_path = path
-                break
+            if os.path.exists(path) and os.path.isfile(path):
+                try:
+                    test_prop = fm.FontProperties(fname=path)
+                    font_path = path
+                    break
+                except:
+                    continue
 
         if font_path:
             try:
