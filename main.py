@@ -92,7 +92,13 @@ if viz_option == '전체 개요':
 elif viz_option == '워드클라우드':
     st.header('☁️ 워드클라우드 분석')
     max_words = st.sidebar.slider('표시할 최대 단어 수', min_value=20, max_value=100, value=50, step=10)
-    han_font_path = 'C:\\Windows\\Fonts\\malgun.ttf'
+
+    import os
+    if os.path.exists('C:\\Windows\\Fonts\\malgun.ttf'):
+        han_font_path = 'C:\\Windows\\Fonts\\malgun.ttf'
+    else:
+        han_font_path = None
+
     text = ' '.join([word for nouns in all_nouns for word in nouns])
     wc = WordCloud(font_path=han_font_path, max_words=max_words, width=800, height=800, background_color='white', colormap='viridis').generate(text)
     fig, ax = plt.subplots(figsize=(10, 10))
