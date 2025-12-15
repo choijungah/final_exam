@@ -94,7 +94,9 @@ elif viz_option == '워드클라우드':
     max_words = st.sidebar.slider('표시할 최대 단어 수', min_value=20, max_value=100, value=50, step=10)
 
     import os
-    if os.path.exists('C:\\Windows\\Fonts\\malgun.ttf'):
+    if os.path.exists('NanumGothic.ttf'):
+        han_font_path = 'NanumGothic.ttf'
+    elif os.path.exists('C:\\Windows\\Fonts\\malgun.ttf'):
         han_font_path = 'C:\\Windows\\Fonts\\malgun.ttf'
     else:
         han_font_path = None
@@ -127,7 +129,16 @@ elif viz_option == '네트워크 분석':
         node_sizes = [G.degree(node) * 100 for node in G.nodes()]
         edge_widths = [G[u][v]['weight'] * 0.05 for u, v in G.edges()]
         fig, ax = plt.subplots(figsize=(15, 15))
-        nx.draw_networkx(G, pos_spring, with_labels=True, node_size=node_sizes, width=edge_widths, font_family='Malgun Gothic', font_size=12, node_color='skyblue', edge_color='gray', alpha=0.8, ax=ax)
+
+        import os
+        import matplotlib.font_manager as fm
+        if os.path.exists('NanumGothic.ttf'):
+            font_prop = fm.FontProperties(fname='NanumGothic.ttf')
+            font_name = font_prop.get_name()
+        else:
+            font_name = 'sans-serif'
+
+        nx.draw_networkx(G, pos_spring, with_labels=True, node_size=node_sizes, width=edge_widths, font_family=font_name, font_size=12, node_color='skyblue', edge_color='gray', alpha=0.8, ax=ax)
         ax.set_title('케이팝 데몬헌터스 키워드 네트워크', size=20)
         ax.axis('off')
         st.pyplot(fig)
