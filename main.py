@@ -94,32 +94,48 @@ elif viz_option == '워드클라우드':
     max_words = st.sidebar.slider('표시할 최대 단어 수', min_value=20, max_value=100, value=50, step=10)
 
     import os
+    import subprocess
     from PIL import ImageFont
 
     font_path = None
-    current_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
 
-    possible_paths = [
-        os.path.join(current_dir, 'NanumGothic.ttf'),
-        'NanumGothic.ttf',
-        './NanumGothic.ttf',
-        'C:\\Windows\\Fonts\\malgun.ttf',
-        '/usr/share/fonts/truetype/nanum/NanumGothic.ttf',
-        '/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf'
-    ]
-
-    for path in possible_paths:
-        if os.path.exists(path) and os.path.isfile(path):
-            try:
-                ImageFont.truetype(path, 20)
-                font_path = os.path.abspath(path)
-                st.info(f'사용 중인 폰트: {os.path.basename(font_path)}')
-                break
-            except Exception as e:
-                continue
+    try:
+        result = subprocess.run(['fc-list', ':lang=ko'], capture_output=True, text=True, timeout=5)
+        if result.returncode == 0:
+            lines = result.stdout.split('\n')
+            for line in lines:
+                if 'Nanum' in line or 'nanum' in line:
+                    parts = line.split(':')
+                    if parts:
+                        font_path = parts[0].strip()
+                        break
+    except:
+        pass
 
     if not font_path:
-        st.warning('한글 폰트를 찾을 수 없습니다. 기본 폰트를 사용합니다.')
+        current_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
+        possible_paths = [
+            '/usr/share/fonts/truetype/nanum/NanumGothic.ttf',
+            '/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf',
+            '/usr/share/fonts/truetype/nanum/NanumMyeongjo.ttf',
+            os.path.join(current_dir, 'NanumGothic.ttf'),
+            'NanumGothic.ttf',
+            'C:\\Windows\\Fonts\\malgun.ttf'
+        ]
+
+        for path in possible_paths:
+            if os.path.exists(path) and os.path.isfile(path):
+                try:
+                    ImageFont.truetype(path, 20)
+                    font_path = os.path.abspath(path)
+                    break
+                except:
+                    continue
+
+    if font_path:
+        st.info(f'사용 폰트: {os.path.basename(font_path)}')
+    else:
+        st.warning('한글 폰트 없음 - 기본 폰트 사용')
 
     text = ' '.join([word for nouns in all_nouns for word in nouns])
 
@@ -155,34 +171,55 @@ elif viz_option == '네트워크 분석':
         edge_widths = [G[u][v]['weight'] * 0.05 for u, v in G.edges()]
 
         import os
+        import subprocess
         import matplotlib.font_manager as fm
         import matplotlib
 
         font_path = None
-        current_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
 
-        possible_paths = [
-            os.path.join(current_dir, 'NanumGothic.ttf'),
-            'NanumGothic.ttf',
-            './NanumGothic.ttf',
-            'C:\\Windows\\Fonts\\malgun.ttf',
-            '/usr/share/fonts/truetype/nanum/NanumGothic.ttf',
-            '/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf'
-        ]
-
-        for path in possible_paths:
-            if os.path.exists(path) and os.path.isfile(path):
-                try:
-                    font_path = os.path.abspath(path)
-                    font_prop = fm.FontProperties(fname=font_path)
-                    matplotlib.rc('font', family=font_prop.get_name())
-                    st.info(f'네트워크 폰트: {os.path.basename(font_path)}')
-                    break
-                except Exception as e:
-                    continue
+        try:
+            result = subprocess.run(['fc-list', ':lang=ko'], capture_output=True, text=True, timeout=5)
+            if result.returncode == 0:
+                lines = result.stdout.split('\n')
+                for line in lines:
+                    if 'Nanum' in line or 'nanum' in line:
+                        parts = line.split(':')
+                        if parts:
+                            font_path = parts[0].strip()
+                            break
+        except:
+            pass
 
         if not font_path:
-            st.warning('한글 폰트를 찾을 수 없습니다. 기본 폰트를 사용합니다.')
+            current_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
+            possible_paths = [
+                '/usr/share/fonts/truetype/nanum/NanumGothic.ttf',
+                '/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf',
+                '/usr/share/fonts/truetype/nanum/NanumMyeongjo.ttf',
+                os.path.join(current_dir, 'NanumGothic.ttf'),
+                'NanumGothic.ttf',
+                'C:\\Windows\\Fonts\\malgun.ttf'
+            ]
+
+            for path in possible_paths:
+                if os.path.exists(path) and os.path.isfile(path):
+                    try:
+                        font_path = os.path.abspath(path)
+                        font_prop = fm.FontProperties(fname=font_path)
+                        matplotlib.rc('font', family=font_prop.get_name())
+                        break
+                    except:
+                        continue
+
+        if font_path:
+            try:
+                font_prop = fm.FontProperties(fname=font_path)
+                matplotlib.rc('font', family=font_prop.get_name())
+                st.info(f'네트워크 폰트: {os.path.basename(font_path)}')
+            except:
+                st.warning('한글 폰트 없음 - 기본 폰트 사용')
+        else:
+            st.warning('한글 폰트 없음 - 기본 폰트 사용')
 
         fig, ax = plt.subplots(figsize=(15, 15))
         nx.draw_networkx(G, pos_spring, with_labels=True, node_size=node_sizes, width=edge_widths, font_size=12, node_color='skyblue', edge_color='gray', alpha=0.8, ax=ax)
