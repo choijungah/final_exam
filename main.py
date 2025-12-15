@@ -94,15 +94,25 @@ elif viz_option == '워드클라우드':
     max_words = st.sidebar.slider('표시할 최대 단어 수', min_value=20, max_value=100, value=50, step=10)
 
     import os
-    if os.path.exists('NanumGothic.ttf'):
-        han_font_path = 'NanumGothic.ttf'
-    elif os.path.exists('C:\\Windows\\Fonts\\malgun.ttf'):
-        han_font_path = 'C:\\Windows\\Fonts\\malgun.ttf'
-    else:
-        han_font_path = None
+    font_path = None
+    possible_paths = [
+        os.path.join(os.path.dirname(__file__), 'NanumGothic.ttf'),
+        'NanumGothic.ttf',
+        'C:\\Windows\\Fonts\\malgun.ttf',
+        '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
+    ]
+
+    for path in possible_paths:
+        if os.path.exists(path):
+            font_path = path
+            break
 
     text = ' '.join([word for nouns in all_nouns for word in nouns])
-    wc = WordCloud(font_path=han_font_path, max_words=max_words, width=800, height=800, background_color='white', colormap='viridis').generate(text)
+    if font_path:
+        wc = WordCloud(font_path=font_path, max_words=max_words, width=800, height=800, background_color='white', colormap='viridis').generate(text)
+    else:
+        wc = WordCloud(max_words=max_words, width=800, height=800, background_color='white', colormap='viridis').generate(text)
+
     fig, ax = plt.subplots(figsize=(10, 10))
     ax.imshow(wc)
     ax.axis('off')
@@ -132,13 +142,27 @@ elif viz_option == '네트워크 분석':
 
         import os
         import matplotlib.font_manager as fm
-        if os.path.exists('NanumGothic.ttf'):
-            font_prop = fm.FontProperties(fname='NanumGothic.ttf')
-            font_name = font_prop.get_name()
-        else:
-            font_name = 'sans-serif'
+        font_path = None
+        possible_paths = [
+            os.path.join(os.path.dirname(__file__), 'NanumGothic.ttf'),
+            'NanumGothic.ttf',
+            'C:\\Windows\\Fonts\\malgun.ttf',
+            '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
+        ]
 
-        nx.draw_networkx(G, pos_spring, with_labels=True, node_size=node_sizes, width=edge_widths, font_family=font_name, font_size=12, node_color='skyblue', edge_color='gray', alpha=0.8, ax=ax)
+        for path in possible_paths:
+            if os.path.exists(path):
+                font_path = path
+                break
+
+        if font_path:
+            try:
+                font_prop = fm.FontProperties(fname=font_path)
+                plt.rcParams['font.family'] = font_prop.get_name()
+            except:
+                pass
+
+        nx.draw_networkx(G, pos_spring, with_labels=True, node_size=node_sizes, width=edge_widths, font_size=12, node_color='skyblue', edge_color='gray', alpha=0.8, ax=ax)
         ax.set_title('케이팝 데몬헌터스 키워드 네트워크', size=20)
         ax.axis('off')
         st.pyplot(fig)
