@@ -94,33 +94,38 @@ elif viz_option == '워드클라우드':
     max_words = st.sidebar.slider('표시할 최대 단어 수', min_value=20, max_value=100, value=50, step=10)
 
     import os
+    from PIL import ImageFont
+
     font_path = None
+    current_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
+
     possible_paths = [
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'NanumGothic.ttf'),
+        os.path.join(current_dir, 'NanumGothic.ttf'),
         'NanumGothic.ttf',
         './NanumGothic.ttf',
         'C:\\Windows\\Fonts\\malgun.ttf',
-        '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
+        '/usr/share/fonts/truetype/nanum/NanumGothic.ttf',
+        '/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf'
     ]
 
     for path in possible_paths:
         if os.path.exists(path) and os.path.isfile(path):
             try:
-                from PIL import ImageFont
-                ImageFont.truetype(path, 12)
-                font_path = path
+                ImageFont.truetype(path, 20)
+                font_path = os.path.abspath(path)
+                st.info(f'사용 중인 폰트: {os.path.basename(font_path)}')
                 break
-            except:
+            except Exception as e:
                 continue
+
+    if not font_path:
+        st.warning('한글 폰트를 찾을 수 없습니다. 기본 폰트를 사용합니다.')
 
     text = ' '.join([word for nouns in all_nouns for word in nouns])
 
-    try:
-        if font_path:
-            wc = WordCloud(font_path=font_path, max_words=max_words, width=800, height=800, background_color='white', colormap='viridis').generate(text)
-        else:
-            wc = WordCloud(max_words=max_words, width=800, height=800, background_color='white', colormap='viridis').generate(text)
-    except:
+    if font_path:
+        wc = WordCloud(font_path=font_path, max_words=max_words, width=800, height=800, background_color='white', colormap='viridis').generate(text)
+    else:
         wc = WordCloud(max_words=max_words, width=800, height=800, background_color='white', colormap='viridis').generate(text)
 
     fig, ax = plt.subplots(figsize=(10, 10))
@@ -148,35 +153,38 @@ elif viz_option == '네트워크 분석':
         pos_spring = nx.spring_layout(G, k=0.3, iterations=50, seed=42)
         node_sizes = [G.degree(node) * 100 for node in G.nodes()]
         edge_widths = [G[u][v]['weight'] * 0.05 for u, v in G.edges()]
-        fig, ax = plt.subplots(figsize=(15, 15))
 
         import os
         import matplotlib.font_manager as fm
+        import matplotlib
+
         font_path = None
+        current_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
+
         possible_paths = [
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), 'NanumGothic.ttf'),
+            os.path.join(current_dir, 'NanumGothic.ttf'),
             'NanumGothic.ttf',
             './NanumGothic.ttf',
             'C:\\Windows\\Fonts\\malgun.ttf',
-            '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
+            '/usr/share/fonts/truetype/nanum/NanumGothic.ttf',
+            '/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf'
         ]
 
         for path in possible_paths:
             if os.path.exists(path) and os.path.isfile(path):
                 try:
-                    test_prop = fm.FontProperties(fname=path)
-                    font_path = path
+                    font_path = os.path.abspath(path)
+                    font_prop = fm.FontProperties(fname=font_path)
+                    matplotlib.rc('font', family=font_prop.get_name())
+                    st.info(f'네트워크 폰트: {os.path.basename(font_path)}')
                     break
-                except:
+                except Exception as e:
                     continue
 
-        if font_path:
-            try:
-                font_prop = fm.FontProperties(fname=font_path)
-                plt.rcParams['font.family'] = font_prop.get_name()
-            except:
-                pass
+        if not font_path:
+            st.warning('한글 폰트를 찾을 수 없습니다. 기본 폰트를 사용합니다.')
 
+        fig, ax = plt.subplots(figsize=(15, 15))
         nx.draw_networkx(G, pos_spring, with_labels=True, node_size=node_sizes, width=edge_widths, font_size=12, node_color='skyblue', edge_color='gray', alpha=0.8, ax=ax)
         ax.set_title('케이팝 데몬헌터스 키워드 네트워크', size=20)
         ax.axis('off')
